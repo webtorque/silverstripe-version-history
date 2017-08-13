@@ -9,12 +9,14 @@ class VersionHistoryExtension extends DataExtension
             // URL for ajax request
             $urlBase = Director::absoluteURL('cms-version-history/compare/'.$this->owner->ClassName.'/'.$this->owner->ID.'/');
             $fields->findOrMakeTab('Root.VersionHistory', 'History');
-            $fields->addFieldToTab('Root.VersionHistory', LiteralField::create('VersionsHistoryMenu',
+            $fields->addFieldToTab('Root.VersionHistory', LiteralField::create(
+                'VersionsHistoryMenu',
                 "<div id=\"VersionHistoryMenu\" class=\"cms-content-tools\" data-url-base=\"$urlBase\">"
                 .$vFields->forTemplate()
                 .'</div>'
             ));
-            $fields->addFieldToTab('Root.VersionHistory', LiteralField::create('VersionComparisonSummary',
+            $fields->addFieldToTab('Root.VersionHistory', LiteralField::create(
+                'VersionComparisonSummary',
                 '<div id="VersionComparisonSummary">'
                 .$this->owner->VersionComparisonSummary()
                 .'</div>'
@@ -103,6 +105,19 @@ class VersionHistoryExtension extends DataExtension
             );
         }
         unset($fieldNames['Version']);
+
+        // Hide a some fields from the version history.
+        $hiddenFields = Config::inst()->get(
+            $this->owner->class,
+            'version_history_hidden_fields'
+        );
+        if (!empty($hiddenFields)) {
+            foreach ($hiddenFields as $hiddenField) {
+                if (isset($fieldNames[$hiddenField])) {
+                    unset($fieldNames[$hiddenField]);
+                }
+            }
+        }
 
         // Compare values between records and make them look nice
         foreach ($fieldNames as $fieldName => $fieldInfo) {
