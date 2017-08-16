@@ -78,8 +78,19 @@ class VersionHistoryExtension extends DataExtension
             if ($versions->count() === 0) {
                 return false;
             }
-            $toRecord = $versions->first();
-            $fromRecord = ($versions->count() === 1) ? null : $versions->last();
+            $toRecord = Versioned::get_version(
+                $this->owner->class,
+                $this->owner->ID,
+                $versions->first()->Version
+            );
+
+            $fromRecord = ($versions->count() === 1)
+                ? null
+                : Versioned::get_version(
+                    $this->owner->class,
+                    $this->owner->ID,
+                    $versions->last()->Version
+                );
         }
 
         if (!$toRecord) {
