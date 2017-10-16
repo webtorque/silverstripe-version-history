@@ -78,8 +78,19 @@ class VersionHistoryExtension extends DataExtension
             if ($versions->count() === 0) {
                 return false;
             }
-            $toRecord = $versions->first();
-            $fromRecord = ($versions->count() === 1) ? null : $versions->last();
+            $toRecord = Versioned::get_version(
+                $this->owner->class,
+                $this->owner->ID,
+                $versions->first()->Version
+            );
+
+            $fromRecord = ($versions->count() === 1)
+                ? null
+                : Versioned::get_version(
+                    $this->owner->class,
+                    $this->owner->ID,
+                    $versions->last()->Version
+                );
         }
 
         if (!$toRecord) {
@@ -121,7 +132,7 @@ class VersionHistoryExtension extends DataExtension
 
         // Compare values between records and make them look nice
         foreach ($fieldNames as $fieldName => $fieldInfo) {
-            $compareValue = ($fromRecord && $toRecord->$fieldInfo['FieldName'] !== $fromRecord->$fieldInfo['FieldName'])
+            $compareValue = ($fromRecord && $toRecord->{$fieldInfo['FieldName']} !== $fromRecord->{$fieldInfo['FieldName']})
                 ? Diff::compareHTML($this->getVersionFieldValue($fromRecord, $fieldInfo), $this->getVersionFieldValue($toRecord, $fieldInfo))
                 : $this->getVersionFieldValue($toRecord, $fieldInfo);
             $field = ReadonlyField::create("VersionHistory$fieldName", $this->owner->fieldLabel($fieldName), $compareValue);
